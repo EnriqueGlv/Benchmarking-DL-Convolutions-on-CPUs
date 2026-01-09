@@ -69,6 +69,14 @@ using namespace dnnl::impl::cpu::x64;
 using namespace dnnl::impl::cpu::aarch64;
 #endif
 
+// Include LIP6 implementations
+#include "cpu/lip6/lip6_convolution_direct.hpp"
+#include "cpu/lip6/lip6_convolution_im2col.hpp"
+#include "cpu/lip6/lip6_convolution_im2row.hpp"
+#include "cpu/lip6/lip6_convolution_MEC.hpp"
+#include "cpu/lip6/lip6_convolution_winograd.hpp"
+#include "cpu/lip6/lip6_convolution_pointwise.hpp"
+
 namespace dnnl {
 namespace impl {
 namespace cpu {
@@ -82,6 +90,15 @@ const std::map<pk_dt_impl_key_t, std::vector<impl_list_item_t>> &impl_list_map()
     static const std::map<pk_dt_impl_key_t, std::vector<impl_list_item_t>> the_map = REG_CONV_P({
         // FWD fp
         {{forward, f32, f32, f32}, {
+            // LIP6: Benchmarked implementations used in priority
+            CPU_INSTANCE(lip6_convolution_pointwise_fwd_t)
+            CPU_INSTANCE(lip6_convolution_wino_fwd_t)
+            CPU_INSTANCE(lip6_convolution_mec_fwd_t)
+            CPU_INSTANCE(lip6_convolution_im2row_fwd_t)
+            CPU_INSTANCE(lip6_convolution_im2col_fwd_t)
+            CPU_INSTANCE(lip6_convolution_direct_fwd_t)
+            CPU_INSTANCE(gemm_convolution_fwd_t)            // OneDNN implicit lowering 
+            // Other OneDNN implementations
             CPU_INSTANCE_AVX512(brdgmm_dw_convolution_fwd_t)
             CPU_INSTANCE_X64(ip_convolution_fwd_t)
             CPU_INSTANCE_AMX(brgemm_1x1_convolution_fwd_t<avx512_core_amx>)
@@ -109,7 +126,6 @@ const std::map<pk_dt_impl_key_t, std::vector<impl_list_item_t>> &impl_list_map()
             CPU_INSTANCE_AARCH64_ACL(acl_depthwise_convolution_fwd_t)
             CPU_INSTANCE_AARCH64_ACL(acl_indirect_gemm_convolution_fwd_t)
             CPU_INSTANCE_AARCH64_ACL(acl_gemm_convolution_fwd_t<f32>)
-            CPU_INSTANCE(gemm_convolution_fwd_t)
             CPU_INSTANCE(ref_convolution_fwd_t)
             CPU_INSTANCE(ref_fused_convolution_fwd_t)
             nullptr,

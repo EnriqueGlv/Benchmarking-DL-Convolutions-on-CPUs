@@ -1,5 +1,6 @@
 /*******************************************************************************
 * Copyright 2016-2023 Intel Corporation
+* Copyright 2025 Sorbonne Université, LIP6
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -27,6 +28,10 @@
 #include "cpu/gemm/gemm.hpp"
 #include "cpu/gemm_convolution_utils.hpp"
 #include "cpu/primitive_attr_postops.hpp"
+
+// imports for GPIOs
+#include <fcntl.h>  // For open()
+#include <unistd.h> // For write(), close()
 
 namespace dnnl {
 namespace impl {
@@ -118,8 +123,21 @@ struct gemm_convolution_fwd_t : public primitive_t {
     typedef typename prec_traits<data_type::f32>::type data_t;
 
     status_t execute(const exec_ctx_t &ctx) const override {
+        // start benchmark
+        // int gpio1_fd = open("/sog/gpio/pin1",O_WRONLY);
+        // write(gpio1_fd, "1", 1);
+        // add more reps
+        const int NBREPS = getenv_int("LIP6_NB_REPS", 1);
+
+        status_t st;
+        for (int rep = 0; rep < NBREPS; rep++){
         bool is_nspc = pd()->jcp_.is_nspc;
-        return is_nspc ? execute_forward_nspc(ctx) : execute_forward_ncsp(ctx);
+        st = is_nspc ? execute_forward_nspc(ctx) : execute_forward_ncsp(ctx);
+        }
+        // stop benchmark
+        // write(gpio1_fd, "0", 1);
+        // close(gpio1_fd);
+        return st;
     }
 
 private:

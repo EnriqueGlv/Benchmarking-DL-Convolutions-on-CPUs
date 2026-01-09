@@ -22,6 +22,7 @@ file(GLOB_RECURSE SOURCES_EXTRA
     ${CMAKE_CURRENT_SOURCE_DIR}/matmul/*.[ch]pp
     ${CMAKE_CURRENT_SOURCE_DIR}/reorder/*.[ch]pp
     ${CMAKE_CURRENT_SOURCE_DIR}/rnn/*.[ch]pp
+    ${CMAKE_CURRENT_SOURCE_DIR}/lip6/*.[ch]pp
     )
 
 foreach(SOURCE_FILE ${SOURCES_EXTRA})
